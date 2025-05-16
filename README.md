@@ -1,6 +1,7 @@
 # 邮箱 API 客户端
 
 本应用是一个基于Python和Flask的邮箱API客户端，用于管理和访问多个Outlook邮箱账号。
+前提部署了api后端具体看这个项目Vercel 无服务器版](https://github.com/HChaoHui/msOauth2api)
 
 ## 功能特点
 
