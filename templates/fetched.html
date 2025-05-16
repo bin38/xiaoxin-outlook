@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>已取件邮箱 - 邮箱 API 客户端</title>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ LOGO_URL }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ LOGO_URL }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ LOGO_URL }}">
+    <style>
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #212529;
+            --accent-color: #0078d4; /* Outlook blue */
+            --card-bg: #fff;
+            --card-border: #c8c8c8;
+            --button-primary: #0078d4; /* Outlook blue */
+            --button-primary-hover: #005a9e;
+            --button-secondary: #f3f3f3;
+            --button-secondary-hover: #e0e0e0;
+            --header-bg: #fff;
+            --header-border-bottom: #e0e0e0;
+            --form-label-color: #495057;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+            --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --danger-hover: #c82333;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-color: #f0f0f0;
+                --accent-color: #3ab7f0;
+                --card-bg: #1e1e1e;
+                --card-border: #444;
+                --button-primary: #3ab7f0;
+                --button-primary-hover: #2a88b8;
+                --header-bg: #1e1e1e;
+                --header-border-bottom: #444;
+                --form-label-color: #bbb;
+                --success-color: #4caf50;
+                --error-color: #f44336;
+                --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+                --warning-color: #ff9800;
+                --danger-color: #f44336;
+                --danger-hover: #d32f2f;
+            }
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--header-border-bottom);
+            padding: 20px 0;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            width: 92%;
+            max-width: 1000px;
+            padding-bottom: 50px;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .box {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s ease;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 1rem;
+            border: 1px solid var(--card-border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(58, 183, 240, 0.2);
+        }
+
+        button {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary {
+            background-color: var(--button-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--button-primary-hover);
+        }
+
+        .btn-secondary {
+            background-color: var(--button-secondary);
+            color: var(--text-color);
+            border: 1px solid var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--button-secondary-hover);
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: var(--danger-hover);
+        }
+
+        .btn-warning {
+            background-color: var(--warning-color);
+            color: var(--text-color);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 账号列表样式 */
+        .accounts-list {
+            margin-top: 20px;
+        }
+        
+        .account-item {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s ease;
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        .account-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+        
+        .account-email {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: var(--accent-color);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .mail-count {
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+            min-width: 24px;
+            text-align: center;
+        }
+        
+        .account-email:hover {
+            text-decoration: underline;
+        }
+        
+        .account-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .btn-mail {
+            background-color: var(--button-primary);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .btn-mail i {
+            font-size: 1.1rem;
+        }
+
+        .loading-spinner {
+            display: none;
+            margin: 1.5rem auto;
+            text-align: center;
+        }
+
+        .loading-spinner .spinner {
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid var(--accent-color);
+            width: 36px;
+            height: 36px;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-accounts, .error-message {
+            padding: 20px;
+            text-align: center;
+            color: var(--form-label-color);
+        }
+        
+        .error-message {
+            color: var(--error-color);
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .threshold-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .threshold-form input {
+            width: 80px;
+            margin-bottom: 0;
+        }
+
+        .threshold-form label {
+            white-space: nowrap;
+        }
+
+        .back-button {
+            margin-bottom: 20px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        .back-button:hover {
+            text-decoration: underline;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 6px;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+        }
+
+        .notification.success {
+            background-color: var(--success-color);
+        }
+
+        .notification.error {
+            background-color: var(--error-color);
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .account-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .account-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .delete-account {
+            color: var(--danger-color);
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .delete-account:hover {
+            transform: scale(1.2);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            background-color: #dc3545; /* 红色背景 */
+            color: white;
+            border: none;
+            border-radius: 4px; /* 方形边角 */
+            padding: 8px 16px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .close-btn:hover {
+            background-color: #c82333; /* 深红色悬停效果 */
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-top">
+            <h1>邮箱 API 客户端</h1>
+            <button id="closeAppBtn" class="close-btn">
+                <i class="ri-close-circle-line"></i> 关闭程序
+            </button>
+        </div>
+        
+        <a href="/" class="back-button">
+            <i class="ri-arrow-left-line"></i> 返回首页
+        </a>
+
+        <h2><i class="ri-inbox-line"></i> 已取件邮箱列表</h2>
+
+        <div class="action-bar">
+            <div class="action-buttons">
+                <button id="refresh-btn" class="btn-primary">
+                    <i class="ri-refresh-line"></i> 刷新
+                </button>
+                <button id="delete-all-btn" class="btn-danger">
+                    <i class="ri-delete-bin-line"></i> 删除全部
+                </button>
+            </div>
+            <div class="threshold-form">
+                <label for="threshold">删除取件次数 ≥</label>
+                <input type="number" id="threshold" min="1" value="1">
+                <button id="delete-threshold-btn" class="btn-warning">
+                    <i class="ri-filter-off-line"></i> 按条件删除
+                </button>
+            </div>
+        </div>
+
+        <div id="fetchedAccounts" class="accounts-list">
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>加载中...</p>
+            </div>
+        </div>
+        
+        <div class="pagination">
+            <button id="prevPageBtn" class="btn-secondary" disabled>上一页</button>
+            <span id="pageInfo">第 1 页</span>
+            <button id="nextPageBtn" class="btn-secondary" disabled>下一页</button>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFetchedAccounts();
+            
+            // 分页按钮事件绑定
+            document.getElementById('prevPageBtn').addEventListener('click', function() {
+                changePage(-1);
+            });
+            
+            document.getElementById('nextPageBtn').addEventListener('click', function() {
+                changePage(1);
+            });
+            
+            // 刷新按钮事件
+            document.getElementById('refresh-btn').addEventListener('click', function() {
+                loadFetchedAccounts();
+            });
+            
+            // 删除全部按钮事件
+            document.getElementById('delete-all-btn').addEventListener('click', function() {
+                if (confirm('确定要删除所有已取件邮箱的记录吗？此操作无法撤销。')) {
+                    deleteAllFetchedAccounts();
+                }
+            });
+            
+            // 按阈值删除按钮事件
+            document.getElementById('delete-threshold-btn').addEventListener('click', function() {
+                const threshold = parseInt(document.getElementById('threshold').value);
+                if (isNaN(threshold) || threshold < 1) {
+                    showNotification('阈值必须是大于等于1的整数', 'error');
+                    return;
+                }
+                
+                if (confirm(`确定要删除所有取件次数大于等于 ${threshold} 的邮箱记录吗？此操作无法撤销。`)) {
+                    deleteByThreshold(threshold);
+                }
+            });
+            
+            // 关闭程序按钮功能
+            document.getElementById('closeAppBtn').addEventListener('click', function() {
+                if (confirm('确定要关闭程序吗？')) {
+                    fetch('/shutdown', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'shutting_down') {
+                            alert('程序正在关闭，关闭完成请刷新页面');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('关闭程序失败:', error);
+                        alert('关闭程序失败，请尝试手动关闭窗口');
+                    });
+                }
+            });
+        });
+        
+        const API_BASE_URL = '{{ API_BASE_URL }}';
+        const ACCOUNTS_PER_PAGE = 10;
+        let currentPage = 1;
+        let fetchedEmails = [];
+        let totalPages = 1;
+        
+        // 页面切换
+        function changePage(delta) {
+            console.log("正在执行changePage函数，增量：", delta);
+            console.log("切换前当前页码：", currentPage, "总页数：", totalPages);
+            const newPage = currentPage + delta;
+            console.log("计算的新页码：", newPage);
+            if (newPage >= 1 && newPage <= totalPages) {
+                console.log("页码在有效范围内，切换到页码：", newPage);
+                currentPage = newPage;
+                displayFetchedAccounts();
+                console.log("完成页面切换，当前页码现在是：", currentPage);
+            } else {
+                console.log("页码超出范围，不执行切换");
+            }
+        }
+        
+        // 加载已取件邮箱列表
+        async function loadFetchedAccounts() {
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            if (loadingSpinner) {
+                loadingSpinner.style.display = 'block';
+            }
+            
+            try {
+                // 获取已取件邮箱数据
+                const [accounts, counts] = await Promise.all([
+                    fetch('/accounts').then(res => res.json()),
+                    fetch('/api/mail/counts').then(res => res.json())
+                ]);
+                
+                const fetchedAccountsContainer = document.getElementById('fetchedAccounts');
+                if (!fetchedAccountsContainer) {
+                    console.error("错误：未找到fetchedAccounts元素");
+                    return;
+                }
+                
+                fetchedAccountsContainer.innerHTML = '';
+                
+                fetchedEmails = Object.keys(counts).filter(email => counts[email] > 0);
+                
+                if (fetchedEmails.length === 0) {
+                    fetchedAccountsContainer.innerHTML = '<div class="no-accounts">暂无已取件邮箱</div>';
+                    // 清空分页
+                    const prevPageBtn = document.getElementById('prevPageBtn');
+                    const nextPageBtn = document.getElementById('nextPageBtn');
+                    const pageInfo = document.getElementById('pageInfo');
+                    
+                    if (prevPageBtn) prevPageBtn.disabled = true;
+                    if (nextPageBtn) nextPageBtn.disabled = true;
+                    if (pageInfo) pageInfo.textContent = '第 1 页 / 共 1 页';
+                    return;
+                }
+                
+                // 排序：按取件次数从高到低
+                fetchedEmails.sort((a, b) => counts[b] - counts[a]);
+                
+                // 计算总页数
+                totalPages = Math.ceil(fetchedEmails.length / ACCOUNTS_PER_PAGE);
+                currentPage = 1; // 重置为第一页
+                
+                // 显示分页后的账号
+                displayFetchedAccounts(accounts, counts);
+            } catch (error) {
+                console.error('加载已取件邮箱失败:', error);
+                const fetchedAccountsContainer = document.getElementById('fetchedAccounts');
+                if (fetchedAccountsContainer) {
+                    fetchedAccountsContainer.innerHTML = '<div class="error-message">加载失败，请刷新页面重试</div>';
+                }
+            } finally {
+                const loadingSpinner = document.getElementById('loadingSpinner');
+                if (loadingSpinner) {
+                    loadingSpinner.style.display = 'none';
+                }
+            }
+        }
+        
+        // 显示分页后的已取件账号
+        async function displayFetchedAccounts(accounts = null, counts = null) {
+            try {
+                // 只有在没有传入参数时才重新获取数据
+                if (!accounts || !counts) {
+                    console.log('重新获取账号和计数数据');
+                    [accounts, counts] = await Promise.all([
+                        fetch('/accounts').then(res => res.json()),
+                        fetch('/api/mail/counts').then(res => res.json())
+                    ]);
+                } else {
+                    console.log('使用已传入的账号和计数数据');
+                }
+                
+                console.log('当前页码：', currentPage, '总页数：', totalPages);
+                const fetchedAccountsContainer = document.getElementById('fetchedAccounts');
+                if (!fetchedAccountsContainer) {
+                    console.error("错误：未找到fetchedAccounts元素");
+                    return;
+                }
+                
+                fetchedAccountsContainer.innerHTML = '';
+                
+                // 更新分页信息
+                const prevPageBtn = document.getElementById('prevPageBtn');
+                const nextPageBtn = document.getElementById('nextPageBtn');
+                const pageInfo = document.getElementById('pageInfo');
+                
+                if (prevPageBtn) prevPageBtn.disabled = currentPage <= 1;
+                if (nextPageBtn) nextPageBtn.disabled = currentPage >= totalPages;
+                if (pageInfo) pageInfo.textContent = `第 ${currentPage} 页 / 共 ${totalPages || 1} 页`;
+                
+                console.log('分页按钮状态：', '上一页='+(currentPage <= 1 ? '禁用' : '启用'), '下一页='+(currentPage >= totalPages ? '禁用' : '启用'));
+                
+                // 获取当前页的邮箱
+                const startIndex = (currentPage - 1) * ACCOUNTS_PER_PAGE;
+                const endIndex = startIndex + ACCOUNTS_PER_PAGE;
+                console.log('显示索引范围：', startIndex, '至', endIndex);
+                const pageEmails = fetchedEmails.slice(startIndex, endIndex);
+                console.log('当前页显示邮箱数量：', pageEmails.length);
+                
+                // 显示当前页的邮箱
+                pageEmails.forEach(email => {
+                    const count = counts[email];
+                    const accountInfo = accounts[email] || {};
+                    
+                    const accountDiv = document.createElement('div');
+                    accountDiv.classList.add('account-item');
+                    accountDiv.innerHTML = `
+                        <div class="account-header">
+                            <div class="account-info" onclick="copyToClipboard('${email}')">
+                                <span>${email}</span>
+                                <span class="mail-count">${count}</span>
+                            </div>
+                            <button class="delete-account" onclick="deleteSingleAccount('${email}')">
+                                <i class="ri-delete-bin-line"></i>
+                            </button>
+                        </div>
+                        <div class="account-actions">
+                            <button onclick="fetchMail('${email}', 'INBOX', 'new')" class="btn-mail">
+                                <i class="ri-mail-line"></i> 新邮件
+                            </button>
+                            <button onclick="fetchMail('${email}', 'INBOX', 'all')" class="btn-mail">
+                                <i class="ri-mail-open-line"></i> 全部邮件
+                            </button>
+                        </div>
+                    `;
+                    fetchedAccountsContainer.appendChild(accountDiv);
+                });
+            } catch (error) {
+                console.error('显示已取件邮箱失败:', error);
+                document.getElementById('fetchedAccounts').innerHTML = '<div class="error-message">显示失败，请刷新页面重试</div>';
+            }
+        }
+        
+        // 删除所有已取件邮箱记录
+        async function deleteAllFetchedAccounts() {
+            try {
+                const response = await fetch('/api/mail/counts/delete-all', {
+                    method: 'POST'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const message = `已删除所有取件记录和对应账号，共${result.deleted_accounts}个账号`;
+                    showNotification(message, 'success');
+                    loadFetchedAccounts(); // 重新加载列表
+                } else {
+                    showNotification('操作失败: ' + (result.message || '未知错误'), 'error');
+                }
+            } catch (error) {
+                console.error('删除失败:', error);
+                showNotification('操作失败，请刷新页面重试', 'error');
+            }
+        }
+        
+        // 按阈值删除邮箱记录
+        async function deleteByThreshold(threshold) {
+            try {
+                const response = await fetch('/api/mail/counts/delete-by-threshold', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ threshold })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const message = `已删除${result.deleted_count}个取件记录和${result.deleted_accounts}个对应账号`;
+                    showNotification(message, 'success');
+                    loadFetchedAccounts(); // 重新加载列表
+                } else {
+                    showNotification('操作失败: ' + (result.message || '未知错误'), 'error');
+                }
+            } catch (error) {
+                console.error('删除失败:', error);
+                showNotification('操作失败，请刷新页面重试', 'error');
+            }
+        }
+        
+        // 删除单个邮箱的计数记录
+        async function deleteSingleAccount(email) {
+            if (confirm(`确定要删除 ${email} 的取件记录和账号吗？此操作无法撤销。`)) {
+                try {
+                    // 使用专用的删除单个邮箱API
+                    const response = await fetch(`/api/mail/count/${email}/delete`, {
+                        method: 'POST'
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        const accountText = result.account_deleted ? "和账号" : "";
+                        showNotification(`已删除 ${email} 的取件记录${accountText}`, 'success');
+                        loadFetchedAccounts(); // 重新加载列表
+                    } else {
+                        showNotification('操作失败: ' + (result.message || '未知错误'), 'error');
+                    }
+                } catch (error) {
+                    console.error('删除失败:', error);
+                    showNotification('操作失败，请刷新页面重试', 'error');
+                }
+            }
+        }
+        
+        // 获取邮件并增加计数
+        function fetchMail(email, mailbox, type) {
+            // 构建账号对象
+            fetch('/accounts')
+                .then(response => response.json())
+                .then(accounts => {
+                    const account = accounts[email];
+                    if (!account) {
+                        alert('账号不存在！');
+                        return;
+                    }
+                    
+                    // 先增加计数
+                    fetch(`/api/mail/count/${email}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // 打开API URL
+                        let url;
+                        if (type === 'new') {
+                            url = `${API_BASE_URL}/mail-new?refresh_token=${account.refresh_token}&client_id=${account.client_id}&email=${email}&mailbox=${mailbox}&response_type=html`;
+                        } else if (type === 'all') {
+                            url = `${API_BASE_URL}/mail-all?refresh_token=${account.refresh_token}&client_id=${account.client_id}&email=${email}&mailbox=${mailbox}&response_type=html`;
+                        }
+                        
+                        if (url) {
+                            window.open(url, '_blank');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('更新邮件计数失败:', error);
+                    });
+                })
+                .catch(error => {
+                    console.error('获取账号信息失败:', error);
+                    alert('获取账号信息失败，请刷新页面重试');
+                });
+        }
+        
+        // 复制到剪贴板
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('邮箱地址已复制到剪贴板', 'success');
+            }, () => {
+                showNotification('复制失败，请手动复制', 'error');
+            });
+        }
+        
+        // 显示通知
+        function showNotification(message, type) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = 'notification ' + type + ' show';
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html> 
