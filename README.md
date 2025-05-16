@@ -17,7 +17,9 @@
 - 支持分页显示，更适合大量账号管理
 
 ## 运行方式
+![image](https://github.com/user-attachments/assets/05afebd7-0b5e-4e68-a4ce-f6e9ed6940cc)
 
+修改为自己的域名
 ### 方法一：直接运行Python脚本
 
 1. 安装依赖：
